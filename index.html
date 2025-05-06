@@ -2,71 +2,154 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Metronom</title>
     <link rel="stylesheet" href="css/style.css">
+    <script type="text/javascript">
+        // Skrypt blokujący gesty powiększania (pinch zoom i double-tap)
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                // Blokuj gesty wieloma palcami (pinch)
+                event.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Zmienna śledząca czas ostatniego dotknięcia dla blokowania double-tap
+        var lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            var now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                // Blokuj double-tap
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+        
+        // Blokuj wszystkie gesty skalowania
+        document.addEventListener('gesturestart', function(event) {
+            event.preventDefault();
+        }, { passive: false });
+        
+        document.addEventListener('gesturechange', function(event) {
+            event.preventDefault();
+        }, { passive: false });
+        
+        document.addEventListener('gestureend', function(event) {
+            event.preventDefault();
+        }, { passive: false });
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>Metronom</h1>
         <div class="metronome">
-            <div class="tempo-display">
-                <span class="tempo">100</span>
-                <span class="bpm">BPM</span>
-            </div>
-            
-            <div class="tempo-settings">
-                <input type="range" min="30" max="240" value="100" class="tempo-slider">
-                <div class="tempo-buttons">
-                    <button class="tempo-decrease">-</button>
-                    <button class="tempo-increase">+</button>
+            <!-- Główny widok (zawsze widoczny) -->
+            <div class="main-view">
+                <div class="tempo-display">
+                    <span class="tempo">100</span>
+                    <span class="bpm">BPM</span>
                 </div>
-            </div>
-            
-            <div class="interval-settings">
-                <div class="interval-option">
-                    <label>Takty grania:</label>
-                    <div class="interval-control">
-                        <button class="play-bars-decrease">-</button>
-                        <span class="play-bars-count">4</span>
-                        <button class="play-bars-increase">+</button>
+                
+                <div class="tempo-settings">
+                    <input type="range" min="30" max="240" value="100" class="tempo-slider">
+                    <div class="tempo-buttons">
+                        <button class="tempo-decrease">-</button>
+                        <button class="tempo-increase">+</button>
                     </div>
                 </div>
-                <div class="interval-option">
-                    <label>Takty ciszy:</label>
-                    <div class="interval-control">
-                        <button class="silent-bars-decrease">-</button>
-                        <span class="silent-bars-count">0</span>
-                        <button class="silent-bars-increase">+</button>
-                    </div>
+                
+                <div class="controls">
+                    <button class="play-stop">Play</button>
                 </div>
             </div>
             
-            <div class="tempo-change-settings">
-                <h3>Automatyczna zmiana tempa</h3>
-                <div class="interval-option">
-                    <label>Co ile taktów:</label>
-                    <div class="interval-control">
-                        <button class="tempo-change-bars-decrease">-</button>
-                        <span class="tempo-change-bars-count">0</span>
-                        <button class="tempo-change-bars-increase">+</button>
+            <!-- Zawartość zakładek -->
+            <div class="tabs-content">
+                <!-- Zakładka: Takty grania i ciszy -->
+                <div id="tab-intervals" class="tab-pane active">
+                    <div class="interval-settings">
+                        <div class="interval-option">
+                            <label>Takty grania:</label>
+                            <div class="interval-control">
+                                <button class="play-bars-decrease">-</button>
+                                <span class="play-bars-count">4</span>
+                                <button class="play-bars-increase">+</button>
+                            </div>
+                        </div>
+                        <div class="interval-option">
+                            <label>Takty ciszy:</label>
+                            <div class="interval-control">
+                                <button class="silent-bars-decrease">-</button>
+                                <span class="silent-bars-count">0</span>
+                                <button class="silent-bars-increase">+</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="interval-option">
-                    <label>Zmiana BPM:</label>
-                    <div class="interval-control">
-                        <button class="tempo-change-value-decrease">-</button>
-                        <span class="tempo-change-value">+5</span>
-                        <button class="tempo-change-value-increase">+</button>
+                
+                <!-- Zakładka: Automatyczna zmiana tempa -->
+                <div id="tab-tempo-change" class="tab-pane">
+                    <div class="tempo-change-settings">
+                        <h3>Automatyczna zmiana tempa</h3>
+                        <div class="interval-option">
+                            <label>Co ile taktów:</label>
+                            <div class="interval-control">
+                                <button class="tempo-change-bars-decrease">-</button>
+                                <span class="tempo-change-bars-count">0</span>
+                                <button class="tempo-change-bars-increase">+</button>
+                            </div>
+                        </div>
+                        <div class="interval-option">
+                            <label>Zmiana BPM:</label>
+                            <div class="interval-control">
+                                <button class="tempo-change-value-decrease">-</button>
+                                <span class="tempo-change-value">+5</span>
+                                <button class="tempo-change-value-increase">+</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="controls">
-                <button class="play-stop">Play</button>
+            <!-- Menu zakładek (na dole) -->
+            <div class="tab-menu">
+                <button class="tab-button active" data-tab="tab-intervals">
+                    <span class="tab-icon">🎵</span>
+                    <span class="tab-name">Interwały</span>
+                </button>
+                <button class="tab-button" data-tab="tab-tempo-change">
+                    <span class="tab-icon">⏱</span>
+                    <span class="tab-name">Zmiana tempa</span>
+                </button>
             </div>
         </div>
     </div>
+    
     <script src="js/metronome.js"></script>
+    <script>
+        // Obsługa zakładek
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Usuń klasę active ze wszystkich przycisków i paneli
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabPanes.forEach(pane => pane.classList.remove('active'));
+                    
+                    // Dodaj klasę active do klikniętego przycisku
+                    button.classList.add('active');
+                    
+                    // Pokaż odpowiedni panel
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
 </body>
 </html>
