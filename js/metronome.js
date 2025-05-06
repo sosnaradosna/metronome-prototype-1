@@ -5,8 +5,7 @@ class Metronome {
         this.tempoSlider = document.querySelector('.tempo-slider');
         this.tempoIncreaseBtn = document.querySelector('.tempo-increase');
         this.tempoDecreaseBtn = document.querySelector('.tempo-decrease');
-        this.playPauseBtn = document.querySelector('.play-pause');
-        this.stopBtn = document.querySelector('.stop');
+        this.playStopBtn = document.querySelector('.play-stop');
         
         // Nowe elementy UI dla kontroli taktów
         this.playBarsCount = document.querySelector('.play-bars-count');
@@ -99,18 +98,13 @@ class Metronome {
             this.updateTempoChangeAmount(Math.max(this.tempoChangeAmount - 1, -20));
         });
         
-        // Obsługa przycisku play/pause
-        this.playPauseBtn.addEventListener('click', () => {
+        // Obsługa przycisku play/stop
+        this.playStopBtn.addEventListener('click', () => {
             if (this.isPlaying) {
-                this.pause();
+                this.stop();
             } else {
                 this.play();
             }
-        });
-        
-        // Obsługa przycisku stop
-        this.stopBtn.addEventListener('click', () => {
-            this.stop();
         });
     }
     
@@ -121,7 +115,7 @@ class Metronome {
         
         // Jeśli metronom jest uruchomiony, zaktualizuj prędkość
         if (this.isPlaying) {
-            this.pause();
+            this.stop();
             this.play();
         }
     }
@@ -182,8 +176,8 @@ class Metronome {
         }
         
         this.isPlaying = true;
-        this.playPauseBtn.textContent = 'Pause';
-        this.playPauseBtn.classList.add('active');
+        this.playStopBtn.textContent = 'Stop';
+        this.playStopBtn.classList.add('active');
         
         // Resetujemy liczniki
         this.currentBar = 0;
@@ -321,16 +315,13 @@ class Metronome {
         }
     }
     
-    pause() {
-        this.isPlaying = false;
-        this.playPauseBtn.textContent = 'Play';
-        this.playPauseBtn.classList.remove('active');
-        clearInterval(this.intervalId);
-    }
-    
     stop() {
-        this.pause();
-        this.updateTempo(100); // Reset to default tempo
+        this.isPlaying = false;
+        this.playStopBtn.textContent = 'Play';
+        this.playStopBtn.classList.remove('active');
+        clearInterval(this.intervalId);
+        
+        // Resetujemy liczniki, ale zachowujemy tempo
         this.currentBar = 0;
         this.currentBeat = 0;
         this.isSilentMode = false;

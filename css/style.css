@@ -78,42 +78,31 @@ h1 {
 .controls {
     display: flex;
     justify-content: center;
-    gap: 15px;
     margin-top: 10px;
 }
 
-.play-pause, .stop {
-    padding: 10px 25px;
+.play-stop {
+    padding: 12px 40px;
     border: none;
     border-radius: 5px;
     font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s;
-}
-
-.play-pause {
     background-color: #4CAF50;
     color: white;
+    width: 160px;
 }
 
-.play-pause.active {
-    background-color: #FFC107;
+.play-stop.active {
+    background-color: #F44336;
 }
 
-.play-pause:hover {
+.play-stop:hover {
     background-color: #45A049;
 }
 
-.play-pause.active:hover {
-    background-color: #FFA000;
-}
-
-.stop {
-    background-color: #F44336;
-    color: white;
-}
-
-.stop:hover {
+.play-stop.active:hover {
     background-color: #D32F2F;
 }
 
