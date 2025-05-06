@@ -124,10 +124,23 @@ h1 {
     height: 100%;
 }
 
+/* Nowy układ tempo-display z przyciskami po bokach */
 .tempo-display {
-    font-size: 40px; /* Zwiększony rozmiar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 15px 0;
+    gap: 20px;
+}
+
+.tempo-value {
+    display: flex;
+    align-items: baseline;
+}
+
+.tempo {
+    font-size: 48px; /* Zwiększony rozmiar */
     font-weight: bold;
-    margin: 10px 0;
 }
 
 .bpm {
@@ -168,7 +181,7 @@ h1 {
     border: none;
 }
 
-/* Zwiększenie wielkości przycisków dla lepszej obsługi dotykowej */
+/* Style dla przycisków zwiększania/zmniejszania tempa */
 .tempo-decrease, .tempo-increase {
     width: 50px;
     height: 50px;
@@ -176,7 +189,8 @@ h1 {
     border: none;
     background-color: #4285F4;
     color: white;
-    font-size: 24px;
+    font-size: 28px;
+    font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s;
     display: flex;
@@ -188,6 +202,7 @@ h1 {
     background-color: #3367D6;
 }
 
+/* Zwiększenie wielkości przycisków dla lepszej obsługi dotykowej */
 .controls {
     display: flex;
     justify-content: center;

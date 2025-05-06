@@ -49,16 +49,16 @@
             <!-- Główny widok (zawsze widoczny) -->
             <div class="main-view">
                 <div class="tempo-display">
-                    <span class="tempo">100</span>
-                    <span class="bpm">BPM</span>
+                    <button class="tempo-decrease">-</button>
+                    <div class="tempo-value">
+                        <span class="tempo">100</span>
+                        <span class="bpm">BPM</span>
+                    </div>
+                    <button class="tempo-increase">+</button>
                 </div>
                 
                 <div class="tempo-settings">
                     <input type="range" min="30" max="240" value="100" class="tempo-slider">
-                    <div class="tempo-buttons">
-                        <button class="tempo-decrease">-</button>
-                        <button class="tempo-increase">+</button>
-                    </div>
                 </div>
                 
                 <div class="controls">
