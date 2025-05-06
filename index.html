@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metronom</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Metronom</h1>
+        <div class="metronome">
+            <div class="tempo-display">
+                <span class="tempo">100</span>
+                <span class="bpm">BPM</span>
+            </div>
+            
+            <div class="tempo-settings">
+                <input type="range" min="30" max="240" value="100" class="tempo-slider">
+                <div class="tempo-buttons">
+                    <button class="tempo-decrease">-</button>
+                    <button class="tempo-increase">+</button>
+                </div>
+            </div>
+            
+            <div class="interval-settings">
+                <div class="interval-option">
+                    <label>Takty grania:</label>
+                    <div class="interval-control">
+                        <button class="play-bars-decrease">-</button>
+                        <span class="play-bars-count">4</span>
+                        <button class="play-bars-increase">+</button>
+                    </div>
+                </div>
+                <div class="interval-option">
+                    <label>Takty ciszy:</label>
+                    <div class="interval-control">
+                        <button class="silent-bars-decrease">-</button>
+                        <span class="silent-bars-count">0</span>
+                        <button class="silent-bars-increase">+</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="play-pause">Play</button>
+                <button class="stop">Stop</button>
+            </div>
+        </div>
+    </div>
+    <script src="js/metronome.js"></script>
+</body>
+</html>
