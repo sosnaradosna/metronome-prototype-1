@@ -16,6 +16,14 @@ class Metronome {
         this.silentBarsIncreaseBtn = document.querySelector('.silent-bars-increase');
         this.silentBarsDecreaseBtn = document.querySelector('.silent-bars-decrease');
         
+        // Nowe elementy UI dla automatycznej zmiany tempa
+        this.tempoChangeBarsCount = document.querySelector('.tempo-change-bars-count');
+        this.tempoChangeBarsIncreaseBtn = document.querySelector('.tempo-change-bars-increase');
+        this.tempoChangeBarsDecreaseBtn = document.querySelector('.tempo-change-bars-decrease');
+        this.tempoChangeValue = document.querySelector('.tempo-change-value');
+        this.tempoChangeValueIncreaseBtn = document.querySelector('.tempo-change-value-increase');
+        this.tempoChangeValueDecreaseBtn = document.querySelector('.tempo-change-value-decrease');
+        
         // Ustawienia metronomu
         this.tempo = 100;
         this.isPlaying = false;
@@ -29,6 +37,12 @@ class Metronome {
         this.currentBeat = 0;       // Licznik bieżącego uderzenia w takcie
         this.beatsPerBar = 4;       // Liczba uderzeń na takt (stała 4/4)
         this.isSilentMode = false;  // Czy jesteśmy w fazie ciszy
+        
+        // Nowe ustawienia dla automatycznej zmiany tempa
+        this.tempoChangeBars = 0;    // Co ile taktów zmieniać tempo (0 = wyłączone)
+        this.tempoChangeAmount = 5;  // O ile BPM zmieniać tempo
+        this.tempoChangeCounter = 0; // Licznik taktów do następnej zmiany tempa
+        this.initialTempo = this.tempo; // Zapamiętujemy początkowe tempo
         
         // Inicjalizacja event listenerów
         this.initEventListeners();
@@ -66,6 +80,23 @@ class Metronome {
         
         this.silentBarsDecreaseBtn.addEventListener('click', () => {
             this.updateSilentBars(Math.max(this.silentBars - 1, 0));
+        });
+        
+        // Nowe kontrolki dla automatycznej zmiany tempa
+        this.tempoChangeBarsIncreaseBtn.addEventListener('click', () => {
+            this.updateTempoChangeBars(this.tempoChangeBars + 1);
+        });
+        
+        this.tempoChangeBarsDecreaseBtn.addEventListener('click', () => {
+            this.updateTempoChangeBars(Math.max(this.tempoChangeBars - 1, 0));
+        });
+        
+        this.tempoChangeValueIncreaseBtn.addEventListener('click', () => {
+            this.updateTempoChangeAmount(this.tempoChangeAmount + 1);
+        });
+        
+        this.tempoChangeValueDecreaseBtn.addEventListener('click', () => {
+            this.updateTempoChangeAmount(Math.max(this.tempoChangeAmount - 1, -20));
         });
         
         // Obsługa przycisku play/pause
@@ -119,6 +150,31 @@ class Metronome {
         }
     }
     
+    // Nowe metody dla automatycznej zmiany tempa
+    updateTempoChangeBars(count) {
+        this.tempoChangeBars = count;
+        this.tempoChangeBarsCount.textContent = count;
+        
+        // Resetujemy licznik zmiany tempa
+        this.tempoChangeCounter = 0;
+        
+        // Jeśli włączamy automatyczną zmianę tempa, zapamiętujemy początkowe tempo
+        if (count > 0) {
+            this.initialTempo = this.tempo;
+        }
+    }
+    
+    updateTempoChangeAmount(amount) {
+        this.tempoChangeAmount = amount;
+        // Formatujemy wyświetlaną wartość, dodając znak + dla wartości dodatnich
+        this.tempoChangeValue.textContent = amount > 0 ? `+${amount}` : `${amount}`;
+        
+        // Resetujemy licznik zmiany tempa
+        if (this.tempoChangeBars > 0) {
+            this.tempoChangeCounter = 0;
+        }
+    }
+    
     play() {
         // Utworzenie AudioContext, jeśli jeszcze nie istnieje
         if (!this.audioContext) {
@@ -133,6 +189,14 @@ class Metronome {
         this.currentBar = 0;
         this.currentBeat = 0;
         this.isSilentMode = false;
+        
+        // Resetujemy licznik zmiany tempa
+        this.tempoChangeCounter = 0;
+        
+        // Jeśli włączona jest automatyczna zmiana tempa, zapamiętujemy początkowe tempo
+        if (this.tempoChangeBars > 0) {
+            this.initialTempo = this.tempo;
+        }
         
         // Obliczanie interwału między "tyknięciami" w ms
         const interval = 60000 / this.tempo;
@@ -163,6 +227,9 @@ class Metronome {
                 
                 // Sprawdzanie czy należy przełączyć tryb
                 this.checkModeSwitch();
+                
+                // Sprawdzanie czy należy zmienić tempo
+                this.checkTempoChange();
             }
             
             // Korekta dryfu
@@ -181,8 +248,9 @@ class Metronome {
                         this.currentBeat = 0;
                         this.currentBar++;
                         this.checkModeSwitch();
+                        this.checkTempoChange();
                     }
-                }, interval);
+                }, 60000 / this.tempo);
             }
         }, interval);
     }
@@ -206,6 +274,53 @@ class Metronome {
         }
     }
     
+    // Nowa metoda do sprawdzania czy należy zmienić tempo
+    checkTempoChange() {
+        // Jeśli automatyczna zmiana tempa jest włączona (tempoChangeBars > 0)
+        if (this.tempoChangeBars > 0) {
+            this.tempoChangeCounter++;
+            
+            // Jeśli osiągnęliśmy liczbę taktów do zmiany tempa
+            if (this.tempoChangeCounter >= this.tempoChangeBars) {
+                // Oblicz nowe tempo
+                let newTempo = this.tempo + this.tempoChangeAmount;
+                
+                // Ogranicz tempo do zakresu 30-240 BPM
+                newTempo = Math.max(30, Math.min(240, newTempo));
+                
+                // Aktualizuj tempo bez resetowania odtwarzania
+                this.tempo = newTempo;
+                this.tempoDisplay.textContent = this.tempo;
+                this.tempoSlider.value = this.tempo;
+                
+                // Resetuj licznik zmiany tempa
+                this.tempoChangeCounter = 0;
+                
+                // Aktualizuj interwał bez zatrzymywania odtwarzania
+                if (this.intervalId) {
+                    clearInterval(this.intervalId);
+                    const interval = 60000 / this.tempo;
+                    
+                    this.intervalId = setInterval(() => {
+                        // Odtwarzamy dźwięk tylko jeśli nie jesteśmy w trybie cichym
+                        if (!this.isSilentMode) {
+                            this.playClick();
+                        }
+                        
+                        // Inkrementacja liczników
+                        this.currentBeat++;
+                        if (this.currentBeat >= this.beatsPerBar) {
+                            this.currentBeat = 0;
+                            this.currentBar++;
+                            this.checkModeSwitch();
+                            this.checkTempoChange();
+                        }
+                    }, interval);
+                }
+            }
+        }
+    }
+    
     pause() {
         this.isPlaying = false;
         this.playPauseBtn.textContent = 'Play';
@@ -219,6 +334,7 @@ class Metronome {
         this.currentBar = 0;
         this.currentBeat = 0;
         this.isSilentMode = false;
+        this.tempoChangeCounter = 0;
     }
     
     playClick() {

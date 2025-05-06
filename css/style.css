@@ -131,7 +131,43 @@ h1 {
     transform: scale(1.2);
 }
 
-.interval-settings {
+/* Ujednolicone style dla wszystkich liczników */
+.play-bars-count, .silent-bars-count, .tempo-change-bars-count, .tempo-change-value {
+    font-weight: bold;
+    min-width: 25px;
+    text-align: center;
+    font-size: 16px;
+}
+
+/* Ujednolicone style dla wszystkich przycisków plus/minus */
+.play-bars-decrease, .play-bars-increase, 
+.silent-bars-decrease, .silent-bars-increase,
+.tempo-change-bars-decrease, .tempo-change-bars-increase,
+.tempo-change-value-decrease, .tempo-change-value-increase {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background-color: #4285F4;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ujednolicony hover dla wszystkich przycisków */
+.play-bars-decrease:hover, .play-bars-increase:hover, 
+.silent-bars-decrease:hover, .silent-bars-increase:hover,
+.tempo-change-bars-decrease:hover, .tempo-change-bars-increase:hover,
+.tempo-change-value-decrease:hover, .tempo-change-value-increase:hover {
+    background-color: #3367D6;
+}
+
+/* Wspólne style dla sekcji ustawień */
+.interval-settings, .tempo-change-settings {
     margin: 15px 0;
     padding: 10px;
     background-color: #f9f9f9;
@@ -157,29 +193,9 @@ h1 {
     gap: 10px;
 }
 
-.play-bars-count, .silent-bars-count {
-    font-weight: bold;
-    min-width: 25px;
-    text-align: center;
-}
-
-.play-bars-decrease, .play-bars-increase, 
-.silent-bars-decrease, .silent-bars-increase {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: none;
-    background-color: #4285F4;
-    color: white;
+.tempo-change-settings h3 {
+    margin: 0 0 10px 0;
     font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.play-bars-decrease:hover, .play-bars-increase:hover, 
-.silent-bars-decrease:hover, .silent-bars-increase:hover {
-    background-color: #3367D6;
+    color: #333;
+    text-align: center;
 }
