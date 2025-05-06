@@ -113,6 +113,61 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Zakładka: Akcenty -->
+                <div id="tab-accents" class="tab-pane">
+                    <div class="accent-settings">
+                        <h3>Ustawienia akcentów</h3>
+                        <div class="beats-selector">
+                            <label>Liczba uderzeń:</label>
+                            <div class="interval-control">
+                                <button class="beats-count-decrease">-</button>
+                                <span class="beats-count">4</span>
+                                <button class="beats-count-increase">+</button>
+                            </div>
+                        </div>
+                        <div class="accent-beats">
+                            <div class="accent-beat" data-beat="0">
+                                <span class="beat-number">1</span>
+                                <div class="accent-level" data-level="2">
+                                    <div class="accent-indicator"></div>
+                                </div>
+                            </div>
+                            <div class="accent-beat" data-beat="1">
+                                <span class="beat-number">2</span>
+                                <div class="accent-level" data-level="1">
+                                    <div class="accent-indicator"></div>
+                                </div>
+                            </div>
+                            <div class="accent-beat" data-beat="2">
+                                <span class="beat-number">3</span>
+                                <div class="accent-level" data-level="1">
+                                    <div class="accent-indicator"></div>
+                                </div>
+                            </div>
+                            <div class="accent-beat" data-beat="3">
+                                <span class="beat-number">4</span>
+                                <div class="accent-level" data-level="1">
+                                    <div class="accent-indicator"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accent-legend">
+                            <div class="legend-item">
+                                <div class="legend-indicator" data-level="0"></div>
+                                <span>Cicho</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-indicator" data-level="1"></div>
+                                <span>Normalnie</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-indicator" data-level="2"></div>
+                                <span>Akcent</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Menu zakładek (na dole) -->
@@ -124,6 +179,10 @@
                 <button class="tab-button" data-tab="tab-tempo-change">
                     <span class="tab-icon">⏱</span>
                     <span class="tab-name">Zmiana tempa</span>
+                </button>
+                <button class="tab-button" data-tab="tab-accents">
+                    <span class="tab-icon">👆</span>
+                    <span class="tab-name">Akcenty</span>
                 </button>
             </div>
         </div>

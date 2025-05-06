@@ -23,6 +23,12 @@ class Metronome {
         this.tempoChangeValueIncreaseBtn = document.querySelector('.tempo-change-value-increase');
         this.tempoChangeValueDecreaseBtn = document.querySelector('.tempo-change-value-decrease');
         
+        // Nowe elementy UI dla akcentów
+        this.beatsCount = document.querySelector('.beats-count');
+        this.beatsCountIncreaseBtn = document.querySelector('.beats-count-increase');
+        this.beatsCountDecreaseBtn = document.querySelector('.beats-count-decrease');
+        this.accentBeats = document.querySelector('.accent-beats');
+        
         // Ustawienia metronomu
         this.tempo = 100;
         this.isPlaying = false;
@@ -34,7 +40,7 @@ class Metronome {
         this.silentBars = 0;        // Ilość taktów ciszy
         this.currentBar = 0;        // Licznik bieżącego taktu
         this.currentBeat = 0;       // Licznik bieżącego uderzenia w takcie
-        this.beatsPerBar = 4;       // Liczba uderzeń na takt (stała 4/4)
+        this.beatsPerBar = 4;       // Liczba uderzeń na takt (domyślnie 4/4)
         this.isSilentMode = false;  // Czy jesteśmy w fazie ciszy
         
         // Nowe ustawienia dla automatycznej zmiany tempa
@@ -42,6 +48,9 @@ class Metronome {
         this.tempoChangeAmount = 5;  // O ile BPM zmieniać tempo
         this.tempoChangeCounter = 0; // Licznik taktów do następnej zmiany tempa
         this.initialTempo = this.tempo; // Zapamiętujemy początkowe tempo
+        
+        // Ustawienia dla akcentów
+        this.accentLevels = [2, 1, 1, 1]; // Poziomy akcentów dla każdego uderzenia (0=cicho, 1=normalnie, 2=głośno)
         
         // Inicjalizacja event listenerów
         this.initEventListeners();
@@ -106,6 +115,30 @@ class Metronome {
                 this.play();
             }
         });
+        
+        // Nowe kontrolki dla akcentów
+        if (this.beatsCountIncreaseBtn) {
+            this.beatsCountIncreaseBtn.addEventListener('click', () => {
+                this.updateBeatsPerBar(Math.min(this.beatsPerBar + 1, 12));
+            });
+        }
+        
+        if (this.beatsCountDecreaseBtn) {
+            this.beatsCountDecreaseBtn.addEventListener('click', () => {
+                this.updateBeatsPerBar(Math.max(this.beatsPerBar - 1, 2));
+            });
+        }
+        
+        // Obsługa klikania w kółka akcentów
+        if (this.accentBeats) {
+            const accentLevels = this.accentBeats.querySelectorAll('.accent-level');
+            accentLevels.forEach(level => {
+                level.addEventListener('click', () => {
+                    const beatIndex = parseInt(level.parentElement.getAttribute('data-beat'));
+                    this.toggleAccentLevel(beatIndex, level);
+                });
+            });
+        }
     }
     
     updateTempo(newTempo) {
@@ -166,6 +199,83 @@ class Metronome {
         // Resetujemy licznik zmiany tempa
         if (this.tempoChangeBars > 0) {
             this.tempoChangeCounter = 0;
+        }
+    }
+    
+    // Nowa metoda do aktualizacji liczby uderzeń w takcie
+    updateBeatsPerBar(count) {
+        // Zabezpieczenie przed nieistniejącymi elementami DOM
+        if (!this.beatsCount) return;
+        
+        this.beatsPerBar = count;
+        this.beatsCount.textContent = count;
+        
+        // Aktualizacja tablicy akcentów do nowej długości
+        while (this.accentLevels.length < count) {
+            this.accentLevels.push(1); // Dodaj nowe uderzenia z domyślnym poziomem 1 (normalne)
+        }
+        this.accentLevels = this.accentLevels.slice(0, count); // Przytnij do nowej długości
+        
+        // Resetujemy liczniki, jeśli jesteśmy w trakcie odtwarzania
+        if (this.isPlaying) {
+            this.currentBeat = 0;
+        }
+        
+        // Aktualizacja interfejsu użytkownika
+        this.updateAccentBeatsUI();
+    }
+    
+    // Metoda do przełączania poziomu akcentu dla danego uderzenia
+    toggleAccentLevel(beatIndex, levelElement) {
+        if (beatIndex < 0 || beatIndex >= this.accentLevels.length) return;
+        
+        // Pobierz aktualny poziom
+        let currentLevel = parseInt(levelElement.getAttribute('data-level'));
+        
+        // Przełącz na następny poziom (0 -> 1 -> 2 -> 0)
+        currentLevel = (currentLevel + 1) % 3;
+        
+        // Zaktualizuj wizualny wskaźnik
+        levelElement.setAttribute('data-level', currentLevel);
+        
+        // Zapisz poziom akcentu
+        this.accentLevels[beatIndex] = currentLevel;
+    }
+    
+    // Metoda do aktualizacji interfejsu akcentów
+    updateAccentBeatsUI() {
+        // Zabezpieczenie przed nieistniejącym elementem DOM
+        if (!this.accentBeats) return;
+        
+        // Wyczyść obecne elementy
+        this.accentBeats.innerHTML = '';
+        
+        // Stwórz nowe elementy dla każdego uderzenia
+        for (let i = 0; i < this.beatsPerBar; i++) {
+            const beatDiv = document.createElement('div');
+            beatDiv.className = 'accent-beat';
+            beatDiv.setAttribute('data-beat', i);
+            
+            const beatNumber = document.createElement('span');
+            beatNumber.className = 'beat-number';
+            beatNumber.textContent = i + 1;
+            
+            const accentLevel = document.createElement('div');
+            accentLevel.className = 'accent-level';
+            accentLevel.setAttribute('data-level', this.accentLevels[i] || 1);
+            
+            const accentIndicator = document.createElement('div');
+            accentIndicator.className = 'accent-indicator';
+            
+            accentLevel.appendChild(accentIndicator);
+            beatDiv.appendChild(beatNumber);
+            beatDiv.appendChild(accentLevel);
+            this.accentBeats.appendChild(beatDiv);
+            
+            // Dodaj event listener do nowego elementu
+            accentLevel.addEventListener('click', () => {
+                this.toggleAccentLevel(i, accentLevel);
+            });
         }
     }
     
@@ -336,16 +446,26 @@ class Metronome {
         oscillator.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
         
-        // Pierwszy dźwięk w takcie ma wyższy ton dla lepszego rozróżnienia
-        if (this.currentBeat === 0) {
-            oscillator.type = 'sine';
-            oscillator.frequency.value = 880; // Wyższy ton dla pierwszego uderzenia
-        } else {
+        // Ustalamy częstotliwość i głośność w zależności od akcentu
+        const accentLevel = this.accentLevels[this.currentBeat] || 1;
+        
+        // Dla różnych poziomów akcentu
+        if (accentLevel === 0) {
+            // Cicho - brak dźwięku
             oscillator.type = 'sine';
             oscillator.frequency.value = 800;
+            gainNode.gain.value = 0; // Cisza
+        } else if (accentLevel === 2) {
+            // Akcent - głośniejszy i wyższy dźwięk
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 900;
+            gainNode.gain.value = 1.2; // Głośniej
+        } else {
+            // Normalny - standardowy dźwięk
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 800;
+            gainNode.gain.value = 0.8; // Normalnie
         }
-        
-        gainNode.gain.value = 1;
         
         const now = this.audioContext.currentTime;
         
@@ -360,4 +480,9 @@ class Metronome {
 // Inicjalizacja metronomu po załadowaniu strony
 document.addEventListener('DOMContentLoaded', () => {
     const metronome = new Metronome();
+    
+    // Inicjalizacja interfejsu akcentów, jeśli elementy istnieją
+    if (metronome.accentBeats) {
+        metronome.updateAccentBeatsUI();
+    }
 });
