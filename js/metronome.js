@@ -451,29 +451,32 @@ class Metronome {
         
         // Dla różnych poziomów akcentu
         if (accentLevel === 0) {
-            // Cicho - brak dźwięku
+            // Cicho - ekstremalnie cichy dźwięk, prawie niesłyszalny
             oscillator.type = 'sine';
-            oscillator.frequency.value = 800;
-            gainNode.gain.value = 0; // Cisza
+            oscillator.frequency.value = 700;
+            gainNode.gain.value = 0.05; // Zmniejszono z 0.2 na 0.05 - znacznie ciszej
         } else if (accentLevel === 2) {
-            // Akcent - głośniejszy i wyższy dźwięk
-            oscillator.type = 'sine';
-            oscillator.frequency.value = 900;
-            gainNode.gain.value = 1.2; // Głośniej
+            // Akcent - znacznie głośniejszy i wyższy dźwięk, inny typ oscylatora
+            oscillator.type = 'triangle'; // Ostrzejszy dźwięk dla akcentu
+            oscillator.frequency.value = 1000; // Wyższa częstotliwość
+            gainNode.gain.value = 1.5; // Znacznie głośniej
         } else {
             // Normalny - standardowy dźwięk
             oscillator.type = 'sine';
             oscillator.frequency.value = 800;
-            gainNode.gain.value = 0.8; // Normalnie
+            gainNode.gain.value = 0.7; // Normalnie
         }
         
         const now = this.audioContext.currentTime;
         
+        // Dłuższy dźwięk dla akcentu
+        const duration = accentLevel === 2 ? 0.08 : 0.05;
+        
         oscillator.start(now);
-        oscillator.stop(now + 0.05);
+        oscillator.stop(now + duration);
         
         // Szybkie wyciszenie dźwięku, aby uniknąć trzasków
-        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
     }
 }
 
