@@ -2,9 +2,8 @@ class Metronome {
     constructor() {
         // Pobieranie elementów UI
         this.tempoDisplay = document.querySelector('.tempo');
-        this.tempoSlider = document.querySelector('.tempo-slider');
-        this.tempoIncreaseBtn = document.querySelector('.tempo-increase');
-        this.tempoDecreaseBtn = document.querySelector('.tempo-decrease');
+        this.tempoDial = document.querySelector('.tempo-dial');
+        this.dialMarker = document.querySelector('.dial-marker');
         this.playStopBtn = document.querySelector('.play-stop');
         
         // Nowe elementy UI dla kontroli taktów
@@ -35,6 +34,15 @@ class Metronome {
         this.intervalId = null;
         this.audioContext = null;
         
+        // Dane dla obrotowego pokrętła
+        this.isDragging = false;
+        this.lastAngle = 0;
+        this.currentRotation = 0;
+        this.minTempo = 30;
+        this.maxTempo = 240;
+        this.tempoRange = this.maxTempo - this.minTempo;
+        this.rotationFactor = 1.5; // Ile stopni rotacji = 1 BPM
+        
         // Nowe ustawienia dla taktów
         this.playBars = 4;          // Ilość taktów grania
         this.silentBars = 0;        // Ilość taktów ciszy
@@ -57,20 +65,21 @@ class Metronome {
     }
     
     initEventListeners() {
-        // Obsługa suwaka tempa
-        this.tempoSlider.addEventListener('input', () => {
-            this.updateTempo(parseInt(this.tempoSlider.value));
-        });
-        
-        // Przycisk zwiększania tempa
-        this.tempoIncreaseBtn.addEventListener('click', () => {
-            this.updateTempo(Math.min(this.tempo + 1, 240));
-        });
-        
-        // Przycisk zmniejszania tempa
-        this.tempoDecreaseBtn.addEventListener('click', () => {
-            this.updateTempo(Math.max(this.tempo - 1, 30));
-        });
+        // Inicjalizacja pokrętła - obsługa myszki
+        if (this.tempoDial) {
+            // Obsługa myszy
+            this.tempoDial.addEventListener('mousedown', this.startDrag.bind(this));
+            document.addEventListener('mousemove', this.drag.bind(this));
+            document.addEventListener('mouseup', this.stopDrag.bind(this));
+            
+            // Obsługa dotyku
+            this.tempoDial.addEventListener('touchstart', this.startDrag.bind(this), { passive: false });
+            document.addEventListener('touchmove', this.drag.bind(this), { passive: false });
+            document.addEventListener('touchend', this.stopDrag.bind(this));
+            
+            // Obsługa kółka myszy na pokrętle
+            this.tempoDial.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
+        }
         
         // Nowe kontrolki dla taktów grania
         this.playBarsIncreaseBtn.addEventListener('click', () => {
@@ -141,10 +150,112 @@ class Metronome {
         }
     }
     
+    // Nowe metody dla obrotowego pokrętła
+    startDrag(e) {
+        e.preventDefault();
+        this.isDragging = true;
+        this.tempoDial.style.cursor = 'grabbing';
+        
+        const pointer = e.touches ? e.touches[0] : e;
+        const rect = this.tempoDial.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        this.lastAngle = this.getAngle(centerX, centerY, pointer.clientX, pointer.clientY);
+    }
+    
+    drag(e) {
+        if (!this.isDragging) return;
+        e.preventDefault();
+        
+        const pointer = e.touches ? e.touches[0] : e;
+        const rect = this.tempoDial.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const angle = this.getAngle(centerX, centerY, pointer.clientX, pointer.clientY);
+        const deltaAngle = angle - this.lastAngle;
+        
+        // Obsługa przeskoku między 0 a 360 stopni
+        let adjustedDelta = deltaAngle;
+        if (deltaAngle > 180) adjustedDelta -= 360;
+        if (deltaAngle < -180) adjustedDelta += 360;
+        
+        // Aktualizacja rotacji i wartości tempa
+        this.currentRotation += adjustedDelta;
+        this.updateTempoFromRotation();
+        
+        // Aktualizacja pozycji wskaźnika
+        this.updateDialMarker();
+        
+        this.lastAngle = angle;
+    }
+    
+    stopDrag() {
+        this.isDragging = false;
+        if (this.tempoDial) {
+            this.tempoDial.style.cursor = 'grab';
+        }
+    }
+    
+    handleWheel(e) {
+        e.preventDefault();
+        // Kierunek kółka myszy: ujemny = w górę (zwiększ), dodatni = w dół (zmniejsz)
+        const direction = Math.sign(e.deltaY);
+        const change = direction * -1; // Odwracamy kierunek
+        
+        // Aktualizacja tempa o 1 BPM
+        this.updateTempo(Math.max(this.minTempo, Math.min(this.maxTempo, this.tempo + change)));
+        
+        // Aktualizacja rotacji pokrętła
+        this.currentRotation = (this.tempo - this.minTempo) * this.rotationFactor;
+        this.updateDialMarker();
+    }
+    
+    getAngle(cx, cy, px, py) {
+        const x = px - cx;
+        const y = py - cy;
+        // Obliczamy kąt w stopniach (0-360)
+        let angle = Math.atan2(y, x) * 180 / Math.PI;
+        if (angle < 0) angle += 360;
+        return angle;
+    }
+    
+    updateTempoFromRotation() {
+        // Konwersja rotacji na wartość tempa
+        const tempoChange = Math.round(this.currentRotation / this.rotationFactor);
+        let newTempo = this.minTempo + tempoChange;
+        
+        // Ograniczenie tempa do zakresu min-max
+        newTempo = Math.max(this.minTempo, Math.min(this.maxTempo, newTempo));
+        
+        this.updateTempo(newTempo);
+    }
+    
+    updateDialMarker() {
+        if (!this.dialMarker) return;
+        
+        // Obliczanie pozycji wskaźnika na podstawie aktualnego tempa
+        const percentage = (this.tempo - this.minTempo) / this.tempoRange;
+        const angle = percentage * 330 - 75; // -75 do 255 stopni (330 stopni zakresu)
+        
+        // Obracanie wskaźnika wokół środka pokrętła
+        const dialCenter = this.tempoDial.getBoundingClientRect().width / 2;
+        const markerRadius = dialCenter - 18; // Promień ruchu wskaźnika (mniejszy niż promień pokrętła)
+        
+        // Obliczanie pozycji wskaźnika
+        const radian = angle * Math.PI / 180;
+        const x = Math.cos(radian) * markerRadius + dialCenter;
+        const y = Math.sin(radian) * markerRadius + dialCenter;
+        
+        this.dialMarker.style.left = `${x}px`;
+        this.dialMarker.style.top = `${y}px`;
+        this.dialMarker.style.transform = 'translate(-50%, -50%)';
+    }
+    
     updateTempo(newTempo) {
         this.tempo = newTempo;
         this.tempoDisplay.textContent = this.tempo;
-        this.tempoSlider.value = this.tempo;
         
         // Jeśli metronom jest uruchomiony, zaktualizuj prędkość
         if (this.isPlaying) {
@@ -395,7 +506,6 @@ class Metronome {
                 // Aktualizuj tempo bez resetowania odtwarzania
                 this.tempo = newTempo;
                 this.tempoDisplay.textContent = this.tempo;
-                this.tempoSlider.value = this.tempo;
                 
                 // Resetuj licznik zmiany tempa
                 this.tempoChangeCounter = 0;
@@ -483,6 +593,11 @@ class Metronome {
 // Inicjalizacja metronomu po załadowaniu strony
 document.addEventListener('DOMContentLoaded', () => {
     const metronome = new Metronome();
+    
+    // Inicjalizacja pozycji wskaźnika pokrętła
+    if (metronome.tempoDial && metronome.dialMarker) {
+        metronome.updateDialMarker();
+    }
     
     // Inicjalizacja interfejsu akcentów, jeśli elementy istnieją
     if (metronome.accentBeats) {

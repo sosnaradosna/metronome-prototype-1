@@ -424,6 +424,71 @@ h1 {
     color: #666;
 }
 
+/* Style dla obrotowego pokrętła tempa */
+.tempo-control {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.tempo-dial {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    border: 8px solid #4285F4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    cursor: grab;
+    touch-action: none;
+}
+
+.tempo-dial:active {
+    cursor: grabbing;
+}
+
+.dial-marker {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    background-color: #4285F4;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.tempo-value {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.tempo {
+    font-size: 48px;
+    font-weight: bold;
+    color: #333;
+}
+
+.bpm {
+    font-size: 18px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Ukrywam stare elementy UI dla tempa, jeśli istnieją */
+.tempo-display, .tempo-settings, .tempo-slider,
+.tempo-decrease, .tempo-increase {
+    display: none;
+}
+
 /* Usuwanie efektów hover dla urządzeń dotykowych */
 @media (hover: none) {
     button:hover {
