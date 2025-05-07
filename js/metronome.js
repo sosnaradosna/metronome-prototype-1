@@ -41,7 +41,10 @@ class Metronome {
         this.minTempo = 30;
         this.maxTempo = 240;
         this.tempoRange = this.maxTempo - this.minTempo;
-        this.rotationFactor = 1.5; // Ile stopni rotacji = 1 BPM
+        
+        // Zmniejszona czułość pokrętła - jeden pełny obrót (360 stopni) = około 70 BPM
+        // 3 pełne obroty (1080 stopni) to pełny zakres 210 BPM
+        this.rotationFactor = 1080 / this.tempoRange; // Ile stopni rotacji na 1 BPM
         
         // Nowe ustawienia dla taktów
         this.playBars = 4;          // Ilość taktów grania
@@ -207,7 +210,7 @@ class Metronome {
         // Aktualizacja tempa o 1 BPM
         this.updateTempo(Math.max(this.minTempo, Math.min(this.maxTempo, this.tempo + change)));
         
-        // Aktualizacja rotacji pokrętła
+        // Aktualizacja rotacji pokrętła na podstawie tempa
         this.currentRotation = (this.tempo - this.minTempo) * this.rotationFactor;
         this.updateDialMarker();
     }
@@ -235,7 +238,8 @@ class Metronome {
     updateDialMarker() {
         if (!this.dialMarker) return;
         
-        // Obliczanie pozycji wskaźnika na podstawie aktualnego tempa
+        // Obliczanie pozycji wskaźnika niezależnie od aktualnej rotacji
+        // Używamy tylko aktualnej wartości tempa
         const percentage = (this.tempo - this.minTempo) / this.tempoRange;
         const angle = percentage * 330 - 75; // -75 do 255 stopni (330 stopni zakresu)
         
@@ -596,6 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Inicjalizacja pozycji wskaźnika pokrętła
     if (metronome.tempoDial && metronome.dialMarker) {
+        metronome.initDialRotation(); // Inicjalizacja rotacji pokrętła
         metronome.updateDialMarker();
     }
     
