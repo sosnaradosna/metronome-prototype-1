@@ -1,19 +1,22 @@
-# System Files
+# System files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
 # IDE files
 .idea/
 .vscode/
-*.sublime-*
-*.code-workspace
+*.sublime-project
+*.sublime-workspace
 
 # Logs
 logs
 *.log
 npm-debug.log*
+
+# Dependencies
+node_modules/
+bower_components/
+
+# Build files
+dist/
+build/
